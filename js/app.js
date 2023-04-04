@@ -12,10 +12,11 @@ let isDrawing = false; // isDrawing permet de savoir si on dessine ou non ( defa
 let startX, startY, x, y; // startX et startY permettent de stocker les coordonnées du point de départ du tracé, x et y permettent de stocker les coordonnées du point d'arrivée du tracé
 let currentMode = "pinceau"; // currentMode permet de savoir si on dessine un rectangle ou un pinceau ( default = pinceau)
 let color = "black"; // color permet de stocker la couleur du pinceau ou du rectangle ( default = black)
-let size = "1"; // size permet de stocker la taille du pinceau ou du rectangle ( default = 1)
+let size = "3"; // size permet de stocker la taille du pinceau ou du rectangle ( default = 3)
 let canvasImage; // canvasImage permet de stocker l'image du canvas
 let rectangle = false; // rectangle permet de savoir si on dessine un rectangle ou un pinceau ( default = false)
 
+// Fonctions permettant de dessiner avec le "pinceau"
 function drawLine(context, x1, y1, x2, y2) {
   context.beginPath(); // beginPath() permet de commencer un nouveau chemin
   context.strokeStyle = color; // strokeStyle permet de définir la couleur du tracé
@@ -26,6 +27,7 @@ function drawLine(context, x1, y1, x2, y2) {
   context.closePath(); // closePath permet de fermer le chemin
 }
 
+// Fonctions permettant de dessiner un rectangle
 function drawRectangle(context, x1, y1, x2, y2) {
   context.beginPath();
   context.rect(x1, y1, x2 - x1, y2 - y1); // x1 et y1 permettent de définir le point de départ du rectangle, x2 - x1 et y2 - y1 permettent de définir la taille du rectangle
@@ -34,16 +36,18 @@ function drawRectangle(context, x1, y1, x2, y2) {
   context.stroke();
 }
 
+// si on clique sur le canvas on récupère les coordonnées du pointeur de la souris par rapport au coin supérieur gauche du canvas et on stocke ces coordonnées dans les variables startX et startY
 myPics.addEventListener("mousedown", (e) => {
-  startX = x = e.clientX - rect.left; // clientX et clientY permettent de récupérer les coordonnées du pointeur de la souris par rapport au coin supérieur gauche de la fenêtre du navigateur
+  startX = x = e.clientX - rect.left;
   startY = y = e.clientY - rect.top;
   isDrawing = true;
 
   if (rectangle) {
-    canvasImage = context.getImageData(0, 0, myPics.width, myPics.height); // getImageData permet de récupérer les données d'image du canvas
+    canvasImage = context.getImageData(0, 0, myPics.width, myPics.height); // getImageData permet de récupérer les données d'image du canvas pour garder le dessin précédent
   }
 });
 
+// si on bouge la souris on dessine sauf si isDrawing est false
 myPics.addEventListener("mousemove", (e) => {
   if (!isDrawing) return; // si isDrawing est false, on ne dessine pas
 
@@ -55,11 +59,12 @@ myPics.addEventListener("mousemove", (e) => {
     x = newX;
     y = newY;
   } else if (currentMode === "rectangle" && rectangle) {
-    context.putImageData(canvasImage, 0, 0); // putImageData permet de dessiner les données d'image sur le canvas à la position x et y spécifiée
+    context.putImageData(canvasImage, 0, 0); // putImageData permet de dessiner les données d'image sur le canvas et supprime les données d'image précédentes
     drawRectangle(context, startX, startY, newX, newY); // startX et startY permettent de définir le point de départ du rectangle, newX et newY permettent de définir le point d'arrivée du rectangle
   }
 });
 
+// si on relache le clic de la souris on arrête de dessiner sinon on continue de dessiner
 window.addEventListener("mouseup", (e) => {
   if (!isDrawing) return;
 
@@ -69,9 +74,10 @@ window.addEventListener("mouseup", (e) => {
   isDrawing = false;
 });
 
+// si un bouton est cliquer on récupère l'id de l'élément sur lequel on a cliqué et on le stocke dans la variable color ( donc il faut que les id des boutons soient les couleurs )
 colorButtons.forEach((button) =>
   button.addEventListener("click", () => {
-    color = button.id; // button.id permet de récupérer l'id de l'élément sur lequel on a cliqué et de le stocker, donc la couleur est egale a l'id de l'élément sur lequel on a cliqué
+    color = button.id;
     if (color === "white") {
       size = "8";
       currentMode = "pinceau";
