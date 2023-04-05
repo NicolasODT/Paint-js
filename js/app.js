@@ -57,22 +57,21 @@ function drawText(x, y, text) {
 }
 
 function createInput(x, y) {
-  const input = document.createElement("input");
+  const input = document.createElement("input"); // on crée un input
   input.type = "text";
   input.style.position = "absolute";
   input.style.left = x + "px";
   input.style.top = y + "px";
-  document.body.appendChild(input);
+  document.body.appendChild(input); // on ajoute l'input au body
 
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       const text = input.value;
-      drawText(x, y, text);
+      drawText(x, y, text); // on dessine le texte à l'endroit où on a cliqué grâce aux coordonnées x et y
       input.remove();
     }
   });
-
-  input.focus();
+  input.focus(); // focus permet de mettre le curseur dans l'input
 }
 
 // si on clique sur le canvas on récupère les coordonnées du pointeur de la souris par rapport au coin supérieur gauche du canvas et on stocke ces coordonnées dans les variables startX et startY
@@ -161,7 +160,7 @@ textButton.addEventListener("click", () => {
     (e) => {
       const textX = e.clientX;
       const textY = e.clientY;
-      createInput(textX, textY);
+      createInput(textX, textY); // on crée un input à l'endroit où on a cliqué
     },
     { once: true }
   );
