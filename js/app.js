@@ -66,9 +66,9 @@ function createInput(x, y) {
 
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
-      const text = input.value;
+      const text = input.value; // on récupère la valeur de l'input (le texte)
       drawText(x, y, text); // on dessine le texte à l'endroit où on a cliqué grâce aux coordonnées x et y
-      input.remove();
+      input.remove(); // on supprime l'input
     }
   });
   input.focus(); // focus permet de mettre le curseur dans l'input
