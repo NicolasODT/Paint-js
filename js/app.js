@@ -161,6 +161,7 @@ textButton.addEventListener("click", () => {
       const textX = e.clientX;
       const textY = e.clientY;
       createInput(textX, textY); // on crée un input à l'endroit où on a cliqué
+      currentMode = "pinceau";
     },
     { once: true }
   );
