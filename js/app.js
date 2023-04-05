@@ -1,20 +1,21 @@
 const myPics = document.getElementById("myPics");
 const context = myPics.getContext("2d");
 const rect = myPics.getBoundingClientRect(); // getboundingclientrect() renvoie la taille d'un élément et sa position relative par rapport à la zone d'affichage (viewport).
-const colorButtons = document.querySelectorAll(
-  "#yellow, #green, #red, #blue, #black, #white"
-);
+const colorButtons = document.querySelectorAll(".color");
 const sizeSelect = document.getElementById("sizeSelect");
 const rectangleButton = document.getElementById("rectangle");
+const cercleButton = document.getElementById("cercle");
 const normalButton = document.getElementById("normal");
+const clearButton = document.getElementById("clear");
+const textButton = document.getElementById("text");
 
-let isDrawing = false; // isDrawing permet de savoir si on dessine ou non ( default = false)
+let isDrawing = false; // isDrawing permet de savoir si on dessine ou non (default = false)
 let startX, startY, x, y; // startX et startY permettent de stocker les coordonnées du point de départ du tracé, x et y permettent de stocker les coordonnées du point d'arrivée du tracé
-let currentMode = "pinceau"; // currentMode permet de savoir si on dessine un rectangle ou un pinceau ( default = pinceau)
-let color = "black"; // color permet de stocker la couleur du pinceau ou du rectangle ( default = black)
-let size = "3"; // size permet de stocker la taille du pinceau ou du rectangle ( default = 3)
+let currentMode = "pinceau"; // currentMode permet de savoir si on dessine un rectangle ou un pinceau (default = pinceau)
+let color = "black"; // color permet de stocker la couleur du pinceau ou du rectangle (default = black)
+let size = "3"; // size permet de stocker la taille du pinceau ou du rectangle (default = 3)
 let canvasImage; // canvasImage permet de stocker l'image du canvas
-let rectangle = false; // rectangle permet de savoir si on dessine un rectangle ou un pinceau ( default = false)
+let rectangle = false; // rectangle permet de savoir si on dessine un rectangle ou un pinceau (default = false)
 
 // Fonctions permettant de dessiner avec le "pinceau"
 function drawLine(context, x1, y1, x2, y2) {
@@ -35,6 +36,44 @@ function drawRectangle(context, x1, y1, x2, y2) {
   context.lineWidth = size;
   context.stroke();
 }
+function drawCercle(context, x1, y1, radius) {
+  context.beginPath();
+  context.arc(x1, y1, radius, 0, 2 * Math.PI);
+  context.strokeStyle = color;
+  context.lineWidth = size;
+  context.stroke();
+}
+
+// fonction qui permettant de vider le canvas (clear)
+function clearCanvas() {
+  context.clearRect(0, 0, myPics.width, myPics.height);
+}
+
+// fonction qui permettant de dessiner du texte
+function drawText(x, y, text) {
+  context.font = "24px Arial";
+  context.fillStyle = color;
+  context.fillText(text, x - rect.left, y - rect.top);
+}
+
+function createInput(x, y) {
+  const input = document.createElement("input");
+  input.type = "text";
+  input.style.position = "absolute";
+  input.style.left = x + "px";
+  input.style.top = y + "px";
+  document.body.appendChild(input);
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const text = input.value;
+      drawText(x, y, text);
+      input.remove();
+    }
+  });
+
+  input.focus();
+}
 
 // si on clique sur le canvas on récupère les coordonnées du pointeur de la souris par rapport au coin supérieur gauche du canvas et on stocke ces coordonnées dans les variables startX et startY
 myPics.addEventListener("mousedown", (e) => {
@@ -42,14 +81,14 @@ myPics.addEventListener("mousedown", (e) => {
   startY = y = e.clientY - rect.top;
   isDrawing = true;
 
-  if (rectangle) {
+  if (rectangle || cercle) {
     canvasImage = context.getImageData(0, 0, myPics.width, myPics.height); // getImageData permet de récupérer les données d'image du canvas pour garder le dessin précédent
   }
 });
 
 // si on bouge la souris on dessine sauf si isDrawing est false
 myPics.addEventListener("mousemove", (e) => {
-  if (!isDrawing) return; // si isDrawing est false, on ne dessine pas
+  if (!isDrawing) return;
 
   const newX = e.clientX - rect.left;
   const newY = e.clientY - rect.top;
@@ -59,8 +98,14 @@ myPics.addEventListener("mousemove", (e) => {
     x = newX;
     y = newY;
   } else if (currentMode === "rectangle" && rectangle) {
-    context.putImageData(canvasImage, 0, 0); // putImageData permet de dessiner les données d'image sur le canvas et supprime les données d'image précédentes
-    drawRectangle(context, startX, startY, newX, newY); // startX et startY permettent de définir le point de départ du rectangle, newX et newY permettent de définir le point d'arrivée du rectangle
+    context.putImageData(canvasImage, 0, 0);
+    drawRectangle(context, startX, startY, newX, newY);
+  } else if (currentMode === "cercle" && cercle) {
+    context.putImageData(canvasImage, 0, 0);
+    const radius = Math.sqrt(
+      Math.pow(newX - startX, 2) + Math.pow(newY - startY, 2)
+    ); // Calculez le rayon en fonction de la distance entre les coordonnées de départ et d'arrivée de la souris
+    drawCercle(context, startX, startY, radius); // Utilisez le rayon calculé pour dessiner le cercle
   }
 });
 
@@ -74,14 +119,15 @@ window.addEventListener("mouseup", (e) => {
   isDrawing = false;
 });
 
-// si un bouton est cliquer on récupère l'id de l'élément sur lequel on a cliqué et on le stocke dans la variable color ( donc il faut que les id des boutons soient les couleurs )
+// si un bouton est cliquer on récupère l'id de l'élément sur lequel on a cliqué et on le stocke dans la variable color (donc il faut que les id des boutons soient les couleurs)
 colorButtons.forEach((button) =>
   button.addEventListener("click", () => {
-    color = button.id;
+    color = button.getAttribute("data-color");
     if (color === "white") {
       size = "8";
       currentMode = "pinceau";
     }
+    console.log(color);
   })
 );
 
@@ -97,4 +143,26 @@ rectangleButton.addEventListener("click", () => {
 normalButton.addEventListener("click", () => {
   currentMode = "pinceau";
   rectangle = false;
+});
+
+cercleButton.addEventListener("click", () => {
+  currentMode = "cercle";
+  rectangle = false;
+});
+
+clearButton.addEventListener("click", () => {
+  clearCanvas();
+});
+
+textButton.addEventListener("click", () => {
+  currentMode = "text";
+  myPics.addEventListener(
+    "click",
+    (e) => {
+      const textX = e.clientX;
+      const textY = e.clientY;
+      createInput(textX, textY);
+    },
+    { once: true }
+  );
 });
