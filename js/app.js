@@ -16,6 +16,7 @@ let color = "black"; // color permet de stocker la couleur du pinceau ou du rect
 let size = "3"; // size permet de stocker la taille du pinceau ou du rectangle (default = 3)
 let canvasImage; // canvasImage permet de stocker l'image du canvas
 let rectangle = false; // rectangle permet de savoir si on dessine un rectangle ou un pinceau (default = false)
+let canvasHistory = []; // pour stocker l'historique des images du canvas
 
 // Fonctions permettant de dessiner avec le "pinceau"
 function drawLine(context, x1, y1, x2, y2) {
@@ -74,6 +75,11 @@ function createInput(x, y) {
   input.focus(); // focus permet de mettre le curseur dans l'input
 }
 
+// on stocke l'historique des images du canvas
+function saveCanvas() {
+  canvasHistory.push(context.getImageData(0, 0, myPics.width, myPics.height));
+}
+
 // si on clique sur le canvas on récupère les coordonnées du pointeur de la souris par rapport au coin supérieur gauche du canvas et on stocke ces coordonnées dans les variables startX et startY
 myPics.addEventListener("mousedown", (e) => {
   startX = x = e.clientX - rect.left;
@@ -83,6 +89,7 @@ myPics.addEventListener("mousedown", (e) => {
   if (rectangle || cercle) {
     canvasImage = context.getImageData(0, 0, myPics.width, myPics.height); // getImageData permet de récupérer les données d'image du canvas pour garder le dessin précédent
   }
+  saveCanvas(); // on stocke l'historique des images du canvas
 });
 
 // si on bouge la souris on dessine sauf si isDrawing est false
@@ -150,7 +157,8 @@ cercleButton.addEventListener("click", () => {
 });
 
 clearButton.addEventListener("click", () => {
-  clearCanvas();
+  saveCanvas(); // on stocke l'historique des images du canvas
+  clearCanvas(); // on vide le canvas
 });
 
 textButton.addEventListener("click", () => {
@@ -165,4 +173,16 @@ textButton.addEventListener("click", () => {
     },
     { once: true }
   );
+});
+
+// fonction qui permet de revenir en arrière
+window.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.key === "z") {
+    if (canvasHistory.length > 1) {
+      // on vérifie que l'historique contient au moins 2 images
+      canvasHistory.pop(); // on supprime la dernière image de l'historique
+      const previousCanvas = canvasHistory[canvasHistory.length - 1]; // on récupère la dernière image de l'historique
+      context.putImageData(previousCanvas, 0, 0); // on dessine l'image précédente
+    }
+  }
 });
